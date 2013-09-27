@@ -60,7 +60,7 @@ if verbose>1,disppercent(inf);,end
 % and see if we should draw all three possible views
 baseMultiAxis = viewGet(v,'baseMultiAxis');
 if (baseType == 0) && (baseMultiAxis>0)
-  % set the axis, either to dispaly all 3 views + a 3D
+  % set the axis, either to display all 3 views + a 3D
   % or just a 3d
   if baseMultiAxis == 1
     mlrGuiSet(v,'multiAxis',1);
@@ -435,7 +435,7 @@ if isempty(hAxis)
 end
 
 % Display the image
-if verbose>1,disppercent(-inf,'Displaying image');,end
+if verbose>1,disppercent(-inf,'Displaying image');end
 if baseType <= 1
   % set the renderer to painters (this seems
   % to avoid some weird gliches in the OpenGL
@@ -446,6 +446,13 @@ if baseType <= 1
   % Just draw with img for regular image,
   if isequal(0,viewGet(v,'baseMultiAxis',baseNum))
     set(fig,'Renderer','painters')
+    % in some cases (not clear exactly which ones), when switching back from displaying a surface, the camera properties
+    % are not adequate to display a 2D image (the image is not visible). 
+    % Resetting these view properties seems to solve the problem
+    set(hAxis,'cameraViewAngleMode','auto');
+    set(hAxis,'xDir','normal');
+    set(hAxis,'yDir','reverse');
+    set(hAxis,'View',[0 90]) 
     h = image(img,'Parent',hAxis);
     v = viewSet(v,'baseHandle',h,baseNum);
     if ~isempty(overlays.RGB) && strcmp(mrGetPref('colorBlending'),'Contours') 
