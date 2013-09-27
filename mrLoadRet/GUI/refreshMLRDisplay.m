@@ -597,8 +597,16 @@ function displayColorbar(gui,cmap,cbarRange,verbose)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function baseSurface = getBaseSurface(v,baseNum)
   
+swapXY = [0 1 0 0;1 0 0 0;0 0 1 0;0 0 0 1];
 if baseNum == viewGet(v,'currentBase')
   baseSurface = viewGet(v,'baseSurface',baseNum);
+  %convert vertices coordinates to corresponding magnet space so that surface appears correctly oriented 
+  %(in case axes are flipped or swapped relative to expected coordinate system in the surface volume space
+  base2mag = viewGet(v,'base2mag',baseNum);
+  if ~isempty(base2mag)
+    baseSurface.vtcs = [baseSurface.vtcs ones(length(baseSurface.vtcs),1)]*swapXY*base2mag'*swapXY; %( x and y are swapped in the base surface vertex coordinates)
+    baseSurface.vtcs = baseSurface.vtcs(:,1:3);
+  end
 else
   % if this is not the current base, this means we're using mutlibase
   % we need to get the actual surface coordinates
@@ -616,7 +624,6 @@ else
   if ~isequal(round(base2base*100000)/100000,eye(4))
     % homogenous coordinates
     baseSurface.vtcs(:,4) = 1;
-    swapXY = [0 1 0 0;1 0 0 0;0 0 1 0;0 0 0 1];
     % xform to current base coordinates
     baseSurface.vtcs = (swapXY * base2base * swapXY * baseSurface.vtcs')';
     % and remove the homogenous 1

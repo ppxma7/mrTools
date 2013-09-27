@@ -105,9 +105,9 @@ else
   baseSurface = viewGet(v,'baseSurface');
   baseDims = viewGet(v,'baseSurfaceDims');
   pos = [];
-  % check mouse bounding box coords against baseDims
-  % for a quick check to see if we are in the volume
-  if all(pointerLoc(1,:) >= 0)
+%   % check mouse bounding box coords against baseDims    % this doesn`t work if surface
+%   % for a quick check to see if we are in the volume    % is displayed in magnet space
+%   if all(pointerLoc(1,:) >= 0)                          % but not really needed...
     % then use select3d which is slooow, but accurate
     if isfield(MLR.interrogator{viewNum},'axesnum')
       if verLessThan('matlab','8.4')
@@ -133,7 +133,7 @@ else
 	coords.base.x = pos(1);coords.base.y = pos(2);coords.base.z = pos(3);
       end
     end
-  end      
+%   end      
 end
 
 % if no base coords, then return
