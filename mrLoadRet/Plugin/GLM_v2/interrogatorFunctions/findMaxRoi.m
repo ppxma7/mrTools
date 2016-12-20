@@ -4,9 +4,8 @@ function findMaxRoi(thisView,overlayNum,scanNum,x,y,z,roi)
 %
 %        $Id$
 % jb 04/12/2009
-% finds the max and min value, as well as coordinates of all non-zero voxels in  ROI
-% (non-zero meaning between any boundaries that have been chosen from any
-% overlay)  
+% finds the max and min value, as well as coordinates of all non-nan voxels in  ROI
+% (non-nan meaning within any clip values that have been chosen from any overlay)
 %
 if isempty(roi)
    mrWarnDlg('(findMaxRoi) Please click in an ROI')

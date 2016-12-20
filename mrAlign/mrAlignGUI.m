@@ -1022,6 +1022,11 @@ volumeXform = eye(4);
 volumeXform(1,1) = ALIGN.volumeVoxelSize(1);
 volumeXform(2,2) = ALIGN.volumeVoxelSize(2);
 volumeXform(3,3) = ALIGN.volumeVoxelSize(3);
+% JB: When voxel sizes are different, we to take into account the fact that
+% it is the edge of the volume and inplane that coincide, so the centre of
+% the first voxel is at [0.5,0.5,0.5] and not [0,0,0] (which is the NIFTI convention)
+shiftOriginXform0p5 = [1 0 0 .5; 0 1 0 .5; 0 0 1 .5; 0 0 0 1];
+% ALIGN.xform = shiftOriginXform0p5\((volumeXform\inplaneXform)*shiftOriginXform0p5);
 ALIGN.xform = volumeXform\inplaneXform;
 ALIGN.xformIsRigidBody = 1;
 
