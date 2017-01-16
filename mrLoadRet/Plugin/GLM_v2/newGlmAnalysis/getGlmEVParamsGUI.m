@@ -140,6 +140,7 @@ while keepAsking
   designSupersampling = 1;
   estimationSupersampling = 1;
   acquisitionDelay = framePeriod/2;
+  acquisitionDuration = framePeriod;
   stimDuration = [];
   stimDurationMode = 'Event-related';
   durationFromFile = 1;
@@ -155,6 +156,9 @@ while keepAsking
     end
     if ~fieldIsNotDefined(scanParams{iScan},'acquisitionDelay')
        acquisitionDelay = scanParams{iScan}.acquisitionDelay;
+    end
+    if ~fieldIsNotDefined(scanParams{iScan},'acquisitionDuration')
+       acquisitionDuration = scanParams{iScan}.acquisitionDuration;
     end
     if ~fieldIsNotDefined(scanParams{iScan},'stimDurationMode') 
        stimDurationMode = scanParams{iScan}.stimDurationMode;
@@ -221,6 +225,7 @@ while keepAsking
     {'estimationSupersampling',estimationSupersampling, deconvolutionVisibleOption,'incdec=[-1 1]','incdecType=plusMinus','minmax=[1 inf]','Supersampling factor of the deconvolution HRF model. Set this to more than 1 in order to resolve the estimated HDR at a temporal resolution that is less than the frame rate. This is only required if both the design and the acquisition have been designed to achieve subsample HDR estimation, and is not supported for MGL/AFNI stim files.'},...
     {'designSupersampling',designSupersampling, designSupersamplingOption,'incdec=[-1 1]','incdecType=plusMinus','minmax=[1 inf]','Supersampling factor of the GLM model. Set this to more than one in order to take into account stimulus times and duration that do not coincide with the frame period, or to round stimulus presentation times to the nearest sample onset. This is not supported for MGL/AFNI stim files.'},...
     {'acquisitionDelay',acquisitionDelay, sprintf('minmax=[0 %f]',framePeriod-0.05),'Time (in sec) at which the signal is actually acquired, on average across slices. This is normally set to half the frame period. If slice motion correction has been used, change to reference slice acquisition time. You might also need to change this value for sparse imaging designs.'},...
+    {'acquisitionDuration',acquisitionDuration, sprintf('minmax=[0 %f]',framePeriod+0.05),'Duration (in sec) of the volume acquisition across slices. This normally equals the frame period, but might differ for sparse imaging designs or if the timeseries was slice-time corrected (in which case it could be set to the slice acquisition duration).'},...
     {'showDesign', 0, 'type=pushbutton','buttonString=Show Design','Shows the experimental design (before convolution with an HRF model) and the design matrix.',...
         'callback',{@plotExperimentalDesign,params,scanParams,thisView,uniqueStimNames,stimNames,framePeriod},'passParams=1'}...
     {'numberContrasts',params.numberContrasts,'minmax=[0 inf]','incdec=[-1 1]','incdecType=plusMinus', 'Number of contrasts on which to perform a T-test. Both contrast values and inference test outcomes will be ouput as overlays.'},...
@@ -313,7 +318,7 @@ function [params,scanParams]=convertStimToEVmatrix(params,tempParams,scanParams,
                        {'stimNames',stimNames{iScan},'type=stringArray','Names of stimulus types'},...
                        });
     scanParams{iScan} = mrParamsCopyFields(newParams,scanParams{iScan});
-    scanParams{iScan} = mrParamsCopyFields(tempParams,scanParams{iScan},{'stimDurationMode','stimDuration','supersamplingMode','designSupersampling','estimationSupersampling','acquisitionDelay'});
+    scanParams{iScan} = mrParamsCopyFields(tempParams,scanParams{iScan},{'stimDurationMode','stimDuration','supersamplingMode','designSupersampling','estimationSupersampling','acquisitionDelay','acquisitionDuration'});
   end
   
   tempParams = mrParamsRemoveField(tempParams,'stimDurationMode');
@@ -322,6 +327,7 @@ function [params,scanParams]=convertStimToEVmatrix(params,tempParams,scanParams,
   tempParams = mrParamsRemoveField(tempParams,'designSupersampling');
   tempParams = mrParamsRemoveField(tempParams,'estimationSupersampling');
   tempParams = mrParamsRemoveField(tempParams,'acquisitionDelay');
+  tempParams = mrParamsRemoveField(tempParams,'acquisitionDuration');
   tempParams = mrParamsRemoveField(tempParams,'showDesign');
   
   params = mrParamsCopyFields(tempParams,params);

@@ -44,16 +44,17 @@ if ~fieldIsNotDefined(params.scanParams{scanNum},'estimationSupersampling')
 else
   estimationSupersampling = 1;
 end
-% if ~fieldIsNotDefined(params.scanParams{scanNum},'acquisitionSubsample')
-%   acquisitionSubsample = params.scanParams{scanNum}.acquisitionSubsample;
-% else
-%   acquisitionSubsample = 1;
-% end
 if ~fieldIsNotDefined(params.scanParams{scanNum},'acquisitionDelay')
   acquisitionDelay = params.scanParams{scanNum}.acquisitionDelay;
 else
   acquisitionDelay = d.tr/2;
 end
+if ~fieldIsNotDefined(params.scanParams{scanNum},'acquisitionDuration')
+  acquisitionDuration = params.scanParams{scanNum}.acquisitionDuration;
+else
+  acquisitionDuration = d.tr;
+end
+
 if isfield(params.scanParams{scanNum},'stimToEVmatrix') && ~isempty(params.scanParams{scanNum}.stimToEVmatrix)
   %match stimNames in params to stimNames in structure d
   [isInMatrix,whichStims] = ismember(d.stimNames,params.scanParams{scanNum}.stimNames);
@@ -87,22 +88,43 @@ stimMatrix = stimMatrix*estimationSupersampling/d.designSupersampling;
 
 % apply EV combination matrix
 d.EVmatrix = stimMatrix*stimToEVmatrix;
+downsampleFactor = d.designSupersampling/estimationSupersampling;
+acquisitionSubSamples = round(rem(acquisitionDelay-acquisitionDuration/2,d.tr/estimationSupersampling)*downsampleFactor/d.tr)+1:...
+                        round(rem(acquisitionDelay+acquisitionDuration/2,d.tr/estimationSupersampling)*downsampleFactor/d.tr-eps*2);
+if isempty(acquisitionSubSamples) % this means the acquisition period is between two subsamples and
+  %is less than 1 subsample long, so taking the subsample closest to the middle of the aquisition period (acquisitionDelay)
+  acquisitionSubSamples = floor(rem(acquisitionDelay,d.tr/estimationSupersampling)*downsampleFactor/d.tr)+1;
+end
+paddingSamples = 1-min(1,min(acquisitionSubSamples)); % if some subsamples are outside the design matrix (less than 1)
+% if any(acquisitionSubSamples<1|acquisitionSubSamples>downsampleFactor)
+% %   mrErrorDlg('(makeDesignMatrix) Acquisition period is outside frame period');
+% %   keyboard
+% end
 allscm = [];
 for iRun = 1:size(runTransition,1)
   scm = [];
   thisEVmatrix = d.EVmatrix(runTransition(iRun,1):runTransition(iRun,2),:);
+  samplesToKeep = [];
+  for iSubSample = acquisitionSubSamples
+    samplesToKeep = [samplesToKeep;(iSubSample:downsampleFactor:size(thisEVmatrix,1)+iSubSample)+paddingSamples];
+  end
+  samplesToKeep = samplesToKeep(:,1:estimationSupersampling*numberSamples(iRun));
   % make stimulus convolution matrix
   for iEV = 1:size(thisEVmatrix,2)
       m = convn(thisEVmatrix(:,iEV), d.hrf);
       %apply saturation
       m = min(m,repmat(saturationThreshold,size(m,1),1));
-      % downsample to estimation sampling rate, with constant integral 
+      % downsample to estimation sampling rate 
       % (we keep extra samples at the end because downsample can remove samples)
-      m = mrDownsample(m, d.designSupersampling/estimationSupersampling, floor(rem(acquisitionDelay,d.tr/estimationSupersampling)*d.designSupersampling/estimationSupersampling/d.tr)+1);
-      %remove extra samples
-      m = m(1:estimationSupersampling*numberSamples(iRun),:);
+      m = [zeros(paddingSamples,size(m,2));m];  %first pad with zeroes as necessary
+      m = sum(m(samplesToKeep'),2);    %sum across acquisition sub-samples
+      % Previously, downsampling was done by integrating, downsampling and differentiating, in order to conserve
+      % the integral of each EV, which is equivalent to downsampling after a moving sum (low-pass filtering) on the full frame period
+      % However this is incorrect in some situations (e.g. sparse imaging or slice-time-corrected timeseries):
+      % In these case, the summation should not be done over the entire frame period but over the acquisition period
+      % (which can now be specified). Old code:
+      % m = mrDownsample(m, downsampleFactor, floor(rem(acquisitionDelay,d.tr/estimationSupersampling)*downsampleFactor/d.tr)+1);
       %only keep acquisition samples
-      %m = m(acquisitionSubsample:estimationSupersampling:end,:);
       m = m(floor(acquisitionDelay/d.tr*estimationSupersampling)+1:estimationSupersampling:end,:);
       % remove mean 
       m = m-repmat(mean(m), size(m,1), 1); %DOES IT CHANGE ANYTHING IF I REMOVE THIS ?
@@ -125,7 +147,6 @@ for iRun = 1:size(runTransition,1)
    end
    % stack this run's stimcmatrix on to the last one
    allscm = [allscm;scm];
-%    d.EVmatrix = [d.EVmatrix;thisEVmatrix];
 end
 
 % set values

@@ -193,6 +193,9 @@ if isfield(var,'supersamplingMode') && strcmp(var.supersamplingMode,'Automatic')
   %find the least supersampling factor (= greatest common factor of all possible durations/times of the event)
   resolutionLimit = .05; %temporal resolution limit in s (we assume that the sub-sampled TR is a multiple of this)
   remainders = [time_remainders duration_remainders d.tr]; %concatenate time and duration remainders in seconds (to make sure there's at least one value
+  if ~fieldIsNotDefined(var,'acquisitionDuration')  % add the acquisition duration parameter if it exists
+    remainders = [remainders var.acquisitionDuration];
+  end
   remainders = round(remainders/resolutionLimit); % express time remainders in terms of the maximum time sampling
   remainders(remainders==0) = [];    %remove 0 values
   remainders = unique(remainders);
