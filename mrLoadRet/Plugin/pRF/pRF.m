@@ -61,26 +61,56 @@ params = checkPRFparams(params);
 % set the group
 v = viewSet(v,'curGroup',params.groupName);
 
-% create the parameters for the r2 overlay
-dateString = datestr(now);
-r2.name = 'r2';
-r2.groupName = params.groupName;
-r2.function = 'pRF';
-r2.reconcileFunction = 'defaultReconcileParams';
-r2.data = cell(1,viewGet(v,'nScans'));
-r2.date = dateString;
-r2.params = cell(1,viewGet(v,'nScans'));
-r2.range = [0 1];
-r2.clip = [0 1];
-% colormap is made with a little bit less on the dark end
-r2.colormap = hot(312);
-r2.colormap = r2.colormap(end-255:end,:);
-r2.alpha = 1;
-r2.colormapType = 'setRangeToMax';
-r2.interrogator = 'pRFPlot';
-r2.mergeFunction = 'pRFMergeParams';
-
 % create the parameters for the polarAngle overlay
+
+overlaySpec = {
+    {'name','r2'}, ...
+    {'name','polarAngle','range',[-pi pi],'clip',[-pi pi], 'colormapType', 'normal', 'colormap' ,hsv(256)}, ...
+    {'name','eccentricity','range',[0 15],'clip',[0 inf], 'colormapType', 'normal', 'colormap' ,copper(256)}, ...
+    {'name','rfHalfWidth','range',[0 15],'clip',[0 inf], 'colormapType', 'normal', 'colormap' ,pink(256)}, ...
+}
+% 
+% % somato - e.g.
+% overlaySpec = {
+%     {'name','r2'}, ...
+%     {'name','prefDigit','range',[0 6],'clip',[ 0 6], 'colormapType', 'normal', 'colormap' ,hsv(256)}, ...
+%     {'name','prefPD','range',[0 15],'clip',[0 inf], 'colormapType', 'normal', 'colormap' ,copper(256)}, ...
+%     {'name','rfHalfWidth','range',[0 15],'clip',[0 inf], 'colormapType', 'normal', 'colormap' ,pink(256)}, ...
+% }
+% 
+% % auditory - e.g.
+% overlaySpec = {
+%     {'name','r2'}, ...
+%     {'name','pcf','range',[0.02 20],'clip',[0.02 20], 'colormapType', 'normal', 'colormap' ,jet(256)}, ...
+%     {'name','ptw','range',[0.02 20],'clip',[0.02 20], 'colormapType', 'normal', 'colormap' ,jet(256)} ...
+% }
+
+% create the parameters for the r2 overlay
+theOverlays = {};
+
+for iOverlay = 1:numel(overlaySpec)
+    theOverlays{iOverlay} = initializeOverlay(v,params, overlaySpec{iOverlay}{1:2})
+    % reality check (which doesn't work!)
+    % assert(isoverlay(theOverlays{iOverlay}),'oops - looks like a non-overlay was created')
+end
+
+% r2 = initializeOverlay(v, params, 'name=r2'); % by default go with r2. 
+
+% - at this point we can two ways:
+
+% 1- make variables (structs from the cell array that contains all the info
+% UNPACK
+%
+% 2- make changes further down the line to deal with the fact that all
+% overlays are stuck together in a cell array 
+% NOT UNPACK until last minute
+
+keyboard
+
+
+
+
+% polarAngle = initializeOverlay(v, params, 'name=polarAngle','range=[-pi pi]', 
 polarAngle = r2;
 polarAngle.name = 'polarAngle';
 polarAngle.range = [-pi pi];
