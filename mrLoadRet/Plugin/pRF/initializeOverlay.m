@@ -48,6 +48,6 @@ o.colormapType = colormapType; %%
 o.interrogator = interrogator; %% 
 o.mergeFunction = mergeFunction; %%
 
-assert(isoverlay(o),'uhoh = also no good')
+% assert(isoverlay(o),'uhoh = also no good')
 
 end

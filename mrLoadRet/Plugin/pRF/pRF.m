@@ -105,34 +105,32 @@ end
 % overlays are stuck together in a cell array 
 % NOT UNPACK until last minute
 
-keyboard
+% keyboard
 
-
-
-
-% polarAngle = initializeOverlay(v, params, 'name=polarAngle','range=[-pi pi]', 
-polarAngle = r2;
-polarAngle.name = 'polarAngle';
-polarAngle.range = [-pi pi];
-polarAngle.clip = [-pi pi];
-polarAngle.colormapType = 'normal';
-polarAngle.colormap = hsv(256);
-
-% create the parameters for the eccentricity overlay
-eccentricity = r2;
-eccentricity.name = 'eccentricity';
-eccentricity.range = [0 15];
-eccentricity.clip = [0 inf];
-eccentricity.colormapType = 'normal';
-eccentricity.colormap = copper(256);
-
-% create the paramteres for the rfHalfWidth overlay
-rfHalfWidth = r2;
-rfHalfWidth.name = 'rfHalfWidth';
-rfHalfWidth.range = [0 15];
-rfHalfWidth.clip = [0 inf];
-rfHalfWidth.colormapType = 'normal';
-rfHalfWidth.colormap = pink(256);
+% 
+% % polarAngle = initializeOverlay(v, params, 'name=polarAngle','range=[-pi pi]', 
+% polarAngle = r2;
+% polarAngle.name = 'polarAngle';
+% polarAngle.range = [-pi pi];
+% polarAngle.clip = [-pi pi];
+% polarAngle.colormapType = 'normal';
+% polarAngle.colormap = hsv(256);
+% 
+% % create the parameters for the eccentricity overlay
+% eccentricity = r2;
+% eccentricity.name = 'eccentricity';
+% eccentricity.range = [0 15];
+% eccentricity.clip = [0 inf];
+% eccentricity.colormapType = 'normal';
+% eccentricity.colormap = copper(256);
+% 
+% % create the paramteres for the rfHalfWidth overlay
+% rfHalfWidth = r2;
+% rfHalfWidth.name = 'rfHalfWidth';
+% rfHalfWidth.range = [0 15];
+% rfHalfWidth.clip = [0 inf];
+% rfHalfWidth.colormapType = 'normal';
+% rfHalfWidth.colormap = pink(256);
 
 % get number of workers 
 nProcessors = mlrNumWorkers;
@@ -160,11 +158,15 @@ for scanNum = params.scanNum
   % get scan dims
   scanDims = viewGet(v,'scanDims',scanNum);
   
-  % init overlays
-  r2.data{scanNum} = nan(scanDims);
-  polarAngle.data{scanNum} = nan(scanDims);
-  eccentricity.data{scanNum} = nan(scanDims);
-  rfHalfWidth.data{scanNum} = nan(scanDims);
+  % init overlays  
+  for iOverlay = 1:numel(overlaySpec)
+      theOverlays{iOverlay}.overlaySpec{2}.data{scanNum} = nan(scanDims);
+  end
+
+%   r2.data{scanNum} = nan(scanDims);
+%   polarAngle.data{scanNum} = nan(scanDims);
+%   eccentricity.data{scanNum} = nan(scanDims);
+%   rfHalfWidth.data{scanNum} = nan(scanDims);
 
   % default all variables that will be returned
   % by pRFFIt, so that we can call it the
@@ -195,10 +197,16 @@ for scanNum = params.scanNum
   % preallocate some space
   rawParams = nan(fit.nParams,n);
   r = nan(n,fit.concatInfo.n);
-  thisr2 = nan(1,n);
-  thisPolarAngle = nan(1,n);
-  thisEccentricity = nan(1,n);
-  thisRfHalfWidth = nan(1,n);
+  
+  thisData = cell(1,numel(overlaySpec));
+  for iOverlay = 1:numel(overlaySpec)
+      thisData{iOverlay}{1} = ['this' overlaySpec{iOverlay}{2}];
+      thisData{iOverlay}{2} = nan(1,n);
+  end
+%   thisr2 = nan(1,n);
+%   thisPolarAngle = nan(1,n);
+%   thisEccentricity = nan(1,n);
+%   thisRfHalfWidth = nan(1,n);
 
   % get some info about the scan to pass in (which prevents
   % pRFFit from calling viewGet - which is problematic for distributed computing
@@ -266,6 +274,8 @@ for scanNum = params.scanNum
 	thisPolarAngle(i) = fit.polarAngle;
 	thisEccentricity(i) = fit.eccentricity;
 	thisRfHalfWidth(i) = fit.std;
+    
+    
 	% keep parameters
 	rawParams(:,i) = fit.params(:);
 	r(i,:) = fit.r;
