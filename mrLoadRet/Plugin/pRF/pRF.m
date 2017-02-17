@@ -322,8 +322,9 @@ for scanNum = params.scanNum
         %       polarAngle.data{scanNum}(x(i),y(i),z(i)) = thisPolarAngle(i);
         %       eccentricity.data{scanNum}(x(i),y(i),z(i)) = thisEccentricity(i);
         %       rfHalfWidth.data{scanNum}(x(i),y(i),z(i)) = thisRfHalfWidth(i);
-        for iOverlay = 1:numel(overlaySpec)                      
-            overlaySpec{iOverlay,2}.data{scanNum}(x(i),y(i),z(i)) = thisData(iOverlay,i);
+        ff = cell2struct(overlaySpec, 'usefulInfo', length(overlaySpec));
+        for iOverlay = 1:length(ff)                     
+            ff(iOverlay).data{scanNum}(x(i),y(i),z(i)) = thisData(iOverlay,i);
         end
     end
   end
@@ -337,8 +338,8 @@ for scanNum = params.scanNum
 
   iScan = find(params.scanNum == scanNum);
   thisParams.scanNum = params.scanNum(iScan);
-  for iOverlay = 1:numel(overlaySpec)
-      overlaySpec{iOverlay,2}.params{scanNum} = thisParams;
+  for iOverlay = 1:length(ff)
+      ff(iOverlay).params{scanNum} = thisParams;
   end  
 %   r2.params{scanNum} = thisParams;
 %   polarAngle.params{scanNum} = thisParams;
@@ -359,9 +360,16 @@ pRFAnal.reconcileFunction = 'defaultReconcileParams';
 pRFAnal.mergeFunction = 'pRFMergeParams';
 pRFAnal.guiFunction = 'pRFGUI';
 pRFAnal.params = params;
-pRFAnal.overlays = [r2 polarAngle eccentricity rfHalfWidth];
+
+% for iOverlay = 1:numel(theOverlays)
+%     ff(iOverlay) = theOverlays{iOverlay}.name;
+% end
+%pRFAnal.overlays = [r2 polarAngle eccentricity rfHalfWidth];
+pRFAnal.overlays = thisData;
+keyboard
+
 pRFAnal.curOverlay = 1;
-pRFAnal.date = dateString;
+pRFAnal.date = date;
 v = viewSet(v,'newAnalysis',pRFAnal);
 
 % if we are going to merge, temporarily set overwritePolicy
