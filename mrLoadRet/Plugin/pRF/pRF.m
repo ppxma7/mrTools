@@ -310,10 +310,15 @@ for scanNum = params.scanNum
 
   iScan = find(params.scanNum == scanNum);
   thisParams.scanNum = params.scanNum(iScan);
-  r2.params{scanNum} = thisParams;
-  polarAngle.params{scanNum} = thisParams;
-  eccentricity.params{scanNum} = thisParams;
-  rfHalfWidth.params{scanNum} = thisParams; 
+  for iOverlay = 1:numel(overlaySpec)
+      overlaySpec{iOverlay,2}.params{scanNum} = thisParams;
+  end  
+%   r2.params{scanNum} = thisParams;
+%   polarAngle.params{scanNum} = thisParams;
+%   eccentricity.params{scanNum} = thisParams;
+%   rfHalfWidth.params{scanNum} = thisParams; 
+
+
   % display how long it took
   disp(sprintf('(pRF) Fitting for %s:%i took in total: %s',params.groupName,scanNum,mlrDispElapsedTime(toc)));
 end
