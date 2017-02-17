@@ -198,11 +198,13 @@ for scanNum = params.scanNum
   rawParams = nan(fit.nParams,n);
   r = nan(n,fit.concatInfo.n);
   
-  thisData = cell(1,numel(overlaySpec));
-  for iOverlay = 1:numel(overlaySpec)
-      thisData{iOverlay}{1} = ['this' overlaySpec{iOverlay}{2}];
-      thisData{iOverlay}{2} = nan(1,n);
-  end
+%   thisData = cell(1,numel(overlaySpec));
+%   for iOverlay = 1:numel(overlaySpec)
+%       thisData{iOverlay}{1} = ['this' overlaySpec{iOverlay}{2}];
+%       thisData{iOverlay}{2} = nan(1,n);
+%   end
+  thisData = nan(numel(overlaySpec),n);
+
 %   thisr2 = nan(1,n);
 %   thisPolarAngle = nan(1,n);
 %   thisEccentricity = nan(1,n);
@@ -270,11 +272,16 @@ for scanNum = params.scanNum
 	% keep data, note that we are keeping temporarily in
 	% a vector here so that parfor won't complain
 	% then afterwords we put it into the actual overlay struct
-	thisr2(i) = fit.r2;
-	thisPolarAngle(i) = fit.polarAngle;
-	thisEccentricity(i) = fit.eccentricity;
-	thisRfHalfWidth(i) = fit.std;
+% 	thisr2(i) = fit.r2;
+% 	thisPolarAngle(i) = fit.polarAngle;
+% 	thisEccentricity(i) = fit.eccentricity;
+% 	thisRfHalfWidth(i) = fit.std;
     
+%     Need to pass overlaySpec to pRFFit to name fitting params in fit structure
+    for iOverlay = 1:numel(overlaySpec)
+        thisData(iOverlay,i) = fit.overlaySpec{iOverlay,2};
+%         thisData{1,iOverlay}{1,2}(i) = nan(1,n);
+    end
     
 	% keep parameters
 	rawParams(:,i) = fit.params(:);
@@ -284,10 +291,13 @@ for scanNum = params.scanNum
       
     % set overlays
     for i = 1:n
-      r2.data{scanNum}(x(i),y(i),z(i)) = thisr2(i);
-      polarAngle.data{scanNum}(x(i),y(i),z(i)) = thisPolarAngle(i);
-      eccentricity.data{scanNum}(x(i),y(i),z(i)) = thisEccentricity(i);
-      rfHalfWidth.data{scanNum}(x(i),y(i),z(i)) = thisRfHalfWidth(i);
+        %       r2.data{scanNum}(x(i),y(i),z(i)) = thisr2(i);
+        %       polarAngle.data{scanNum}(x(i),y(i),z(i)) = thisPolarAngle(i);
+        %       eccentricity.data{scanNum}(x(i),y(i),z(i)) = thisEccentricity(i);
+        %       rfHalfWidth.data{scanNum}(x(i),y(i),z(i)) = thisRfHalfWidth(i);
+        for iOverlay = 1:numel(overlaySpec)                      
+            overlaySpec{iOverlay,2}.data{scanNum}(x(i),y(i),z(i)) = thisData(iOverlay,i);
+        end
     end
   end
   % display time update
