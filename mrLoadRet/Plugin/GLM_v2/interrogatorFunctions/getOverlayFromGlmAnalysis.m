@@ -1,8 +1,8 @@
-function hdrSingleValue(thisView,overlayNum,scan,x,y,s,roi)
+function thisView = getOverlayFromGlmAnalysis(thisView,overlayNum,scan,x,y,s,roi)
 % hdrSingleValue.m
 %
 %       $Id$
-%      usage: hdrSingleValue(thisView,overlayNum,scan,x,y,s,roi)
+%      usage: thisView = getOverlayFromGlmAnalysis(thisView,overlayNum,scan,x,y,s,roi)
 %         by:  julien besle
 %       date: 20/05/2010
 %    purpose: extract overlays from GLM/event-related analysis
