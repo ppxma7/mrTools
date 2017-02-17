@@ -68,7 +68,7 @@ overlaySpec = {
     {'name','polarAngle','range',[-pi pi],'clip',[-pi pi], 'colormapType', 'normal', 'colormap' ,hsv(256)}, ...
     {'name','eccentricity','range',[0 15],'clip',[0 inf], 'colormapType', 'normal', 'colormap' ,copper(256)}, ...
     {'name','rfHalfWidth','range',[0 15],'clip',[0 inf], 'colormapType', 'normal', 'colormap' ,pink(256)}, ...
-}
+};
 % 
 % % somato - e.g.
 % overlaySpec = {
@@ -89,7 +89,7 @@ overlaySpec = {
 theOverlays = {};
 
 for iOverlay = 1:numel(overlaySpec)
-    theOverlays{iOverlay} = initializeOverlay(v,params, overlaySpec{iOverlay}{1:2})
+    theOverlays{iOverlay} = initializeOverlay(v,params, overlaySpec{iOverlay}{1:2});
     % reality check (which doesn't work!)
     % assert(isoverlay(theOverlays{iOverlay}),'oops - looks like a non-overlay was created')
 end
@@ -266,7 +266,7 @@ for scanNum = params.scanNum
     end
 
     % now loop over each voxel
-    parfor i = blockStart:blockEnd
+    for i = blockStart:blockEnd
       fit = pRFFit(v,scanNum,x(i),y(i),z(i),'stim',stim,'concatInfo',concatInfo,'prefit',prefit,'fitTypeParams',params.pRFFit,'dispIndex',i,'dispN',n,'tSeries',loadROI.tSeries(i-blockStart+1,:)','framePeriod',framePeriod,'junkFrames',junkFrames,'paramsInfo',paramsInfo);
       if ~isempty(fit)
 	% keep data, note that we are keeping temporarily in
@@ -278,10 +278,37 @@ for scanNum = params.scanNum
 % 	thisRfHalfWidth(i) = fit.std;
     
 %     Need to pass overlaySpec to pRFFit to name fitting params in fit structure
-    for iOverlay = 1:numel(overlaySpec)
-        thisData(iOverlay,i) = fit.overlaySpec{iOverlay,2};
-%         thisData{1,iOverlay}{1,2}(i) = nan(1,n);
-    end
+
+        stuff = fieldnames(fit);
+        for iOverlay = 1:numel(overlaySpec)
+            %thisData(iOverlay,i) = fit.overlaySpec{iOverlay,2};
+
+            %%thisData{1,iOverlay}{1,2}(i) = nan(1,n);
+
+            %this won't exist inside the fit structure yet, so it will error
+            % - ma
+
+            test = strcmpi(fieldnames(fit), overlaySpec{iOverlay}{2});
+            pos = find(test==1);
+            test(test==0) = [];
+
+            fudgetest = strcmpi(overlaySpec{iOverlay}, 'rfHalfwidth'); % need to find out how to change this!!!
+            fudgetest(fudgetest==0) = [];
+
+            if fudgetest
+                thisData(iOverlay,i) = fit.std;
+            elseif test
+
+
+                %thisData{iOverlay}{2}(i) = fit.(stuff{pos});
+                thisData(iOverlay,i) = fit.(stuff{pos});
+           
+
+            else
+                error('BAD NEWS')
+            end
+
+        end
     
 	% keep parameters
 	rawParams(:,i) = fit.params(:);
