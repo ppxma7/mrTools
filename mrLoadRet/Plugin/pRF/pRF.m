@@ -365,8 +365,8 @@ pRFAnal.params = params;
 %     ff(iOverlay) = theOverlays{iOverlay}.name;
 % end
 %pRFAnal.overlays = [r2 polarAngle eccentricity rfHalfWidth];
-pRFAnal.overlays = thisData;
-keyboard
+pRFAnal.overlays = ff;
+
 
 pRFAnal.curOverlay = 1;
 pRFAnal.date = date;
