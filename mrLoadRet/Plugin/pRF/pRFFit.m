@@ -189,6 +189,26 @@ if isfield(fitParams,'prefit') && ~isempty(fitParams.prefit)
     fit.r2 = maxr^2;
     fit.r = maxr;
     [fit.polarAngle fit.eccentricity] = cart2pol(fit.x,fit.y);
+    %%%%%%%
+    %% use anon function to convert from cart to pol
+    mod = 'vision'; % this variable should be set in the GUI - the user can choose the stimulus / modality
+    overlayNames = getMetaData(v,params,mod,'overlayNames');
+    % r2
+    eval(sprintf('fit.%s = maxr^2',overlayNames{1}));
+    % x
+    eval(sprintf('fit.%s = fit.x',overlayNames{2}));
+    
+    if numel(overlayNames) == 4
+        % y
+        eval(sprintf('fit.%s = fit.y',overlayNames{3}));
+        % hw
+        eval(sprintf('fit.%s = fit.std',overlayNames{4}));
+    else
+        % hw
+        eval(sprintf('fit.%s = fit.std',overlayNames{3}));
+    end           
+    %%%%%%
+    
     % display
     if fitParams.verbose
       disp(sprintf('%s[%2.f %2.f %2.f] r2=%0.2f polarAngle=%6.1f eccentricity=%6.1f rfHalfWidth=%6.1f',fitParams.dispstr,x,y,z,fit.r2,r2d(fit.polarAngle),fit.eccentricity,fit.std));
@@ -222,6 +242,26 @@ end
 
 % compute polar coordinates
 [fit.polarAngle fit.eccentricity] = cart2pol(fit.x,fit.y);
+
+%%%%%%%
+%% use anon function to convert from cart to pol
+mod = 'vision'; % this variable should be set in the GUI - the user can choose the stimulus / modality
+overlayNames = getMetaData(v,params,mod,'overlayNames');
+% r2
+eval(sprintf('fit.%s = maxr^2',overlayNames{1}));
+% x
+eval(sprintf('fit.%s = fit.x',overlayNames{2}));
+
+if numel(overlayNames) == 4
+    % y
+    eval(sprintf('fit.%s = fit.y',overlayNames{3}));
+    % hw
+    eval(sprintf('fit.%s = fit.std',overlayNames{4}));
+else
+    % hw
+    eval(sprintf('fit.%s = fit.std',overlayNames{3}));
+end
+%%%%%%%
 
 % display
 if fitParams.verbose

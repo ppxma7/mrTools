@@ -63,12 +63,18 @@ v = viewSet(v,'curGroup',params.groupName);
 
 % create the parameters for the polarAngle overlay
 
-overlaySpec = {
-    {'name','r2'}, ...
-    {'name','polarAngle','range',[-pi pi],'clip',[-pi pi], 'colormapType', 'normal', 'colormap' ,hsv(256)}, ...
-    {'name','eccentricity','range',[0 15],'clip',[0 inf], 'colormapType', 'normal', 'colormap' ,copper(256)}, ...
-    {'name','rfHalfWidth','range',[0 15],'clip',[0 inf], 'colormapType', 'normal', 'colormap' ,pink(256)}, ...
-};
+mod = 'vision'; % this variable should be set in the GUI - the user can choose the stimulus / modality
+
+overlayNames = getMetaData(v,params,mod,'overlayNames');
+
+theOverlays = getMetaData(v,params,mod,'theOverlays');
+
+% overlaySpec = {
+%     {'name','r2'}, ...
+%     {'name','polarAngle','range',[-pi pi],'clip',[-pi pi], 'colormapType', 'normal', 'colormap' ,hsv(256)}, ...
+%     {'name','eccentricity','range',[0 15],'clip',[0 inf], 'colormapType', 'normal', 'colormap' ,copper(256)}, ...
+%     {'name','rfHalfWidth','range',[0 15],'clip',[0 inf], 'colormapType', 'normal', 'colormap' ,pink(256)}, ...
+% };
 % 
 % % somato - e.g.
 % overlaySpec = {
@@ -86,13 +92,13 @@ overlaySpec = {
 % }
 
 % create the parameters for the r2 overlay
-theOverlays = {};
-
-for iOverlay = 1:numel(overlaySpec)
-    theOverlays{iOverlay} = initializeOverlay(v,params, overlaySpec{iOverlay}{1:2});
-    % reality check (which doesn't work!)
-    % assert(isoverlay(theOverlays{iOverlay}),'oops - looks like a non-overlay was created')
-end
+% theOverlays = {};
+% 
+% for iOverlay = 1:numel(overlaySpec)
+%     theOverlays{iOverlay} = initializeOverlay(v,params, overlaySpec{iOverlay}{1:2});
+%     % reality check (which doesn't work!)
+%     % assert(isoverlay(theOverlays{iOverlay}),'oops - looks like a non-overlay was created')
+% end
 
 % r2 = initializeOverlay(v, params, 'name=r2'); % by default go with r2. 
 
@@ -160,7 +166,8 @@ for scanNum = params.scanNum
   
   % init overlays  
   for iOverlay = 1:numel(overlaySpec)
-      theOverlays{iOverlay}.overlaySpec{2}.data{scanNum} = nan(scanDims);
+%       theOverlays{iOverlay}.overlayNames{iOverlay}.data{scanNum} = nan(scanDims);
+      theOverlays{iOverlay}.data{scanNum} = nan(scanDims);
   end
 
 %   r2.data{scanNum} = nan(scanDims);
@@ -203,7 +210,7 @@ for scanNum = params.scanNum
 %       thisData{iOverlay}{1} = ['this' overlaySpec{iOverlay}{2}];
 %       thisData{iOverlay}{2} = nan(1,n);
 %   end
-  thisData = nan(numel(overlaySpec),n);
+  thisData = nan(numel(overlayNames),n);
 
 %   thisr2 = nan(1,n);
 %   thisPolarAngle = nan(1,n);
@@ -279,34 +286,34 @@ for scanNum = params.scanNum
     
 %     Need to pass overlaySpec to pRFFit to name fitting params in fit structure
 
-        stuff = fieldnames(fit);
-        for iOverlay = 1:numel(overlaySpec)
-            %thisData(iOverlay,i) = fit.overlaySpec{iOverlay,2};
+%         stuff = fieldnames(fit);
+        for iOverlay = 1:numel(overlayNames)
+            thisData(iOverlay,i) = fit.overlayNames{iOverlay};
 
             %%thisData{1,iOverlay}{1,2}(i) = nan(1,n);
 
             %this won't exist inside the fit structure yet, so it will error
             % - ma
 
-            test = strcmpi(fieldnames(fit), overlaySpec{iOverlay}{2});
-            pos = find(test==1);
-            test(test==0) = [];
-
-            fudgetest = strcmpi(overlaySpec{iOverlay}, 'rfHalfwidth'); % need to find out how to change this!!!
-            fudgetest(fudgetest==0) = [];
-
-            if fudgetest
-                thisData(iOverlay,i) = fit.std;
-            elseif test
-
-
-                %thisData{iOverlay}{2}(i) = fit.(stuff{pos});
-                thisData(iOverlay,i) = fit.(stuff{pos});
-           
-
-            else
-                error('BAD NEWS')
-            end
+%             test = strcmpi(fieldnames(fit), overlaySpec{iOverlay}{2});
+%             pos = find(test==1);
+%             test(test==0) = [];
+% 
+%             fudgetest = strcmpi(overlaySpec{iOverlay}, 'rfHalfwidth'); % need to find out how to change this!!!
+%             fudgetest(fudgetest==0) = [];
+% 
+%             if fudgetest
+%                 thisData(iOverlay,i) = fit.std;
+%             elseif test
+% 
+% 
+%                 %thisData{iOverlay}{2}(i) = fit.(stuff{pos});
+%                 thisData(iOverlay,i) = fit.(stuff{pos});
+%            
+% 
+%             else
+%                 error('BAD NEWS')
+%             end
 
         end
     
@@ -322,9 +329,9 @@ for scanNum = params.scanNum
         %       polarAngle.data{scanNum}(x(i),y(i),z(i)) = thisPolarAngle(i);
         %       eccentricity.data{scanNum}(x(i),y(i),z(i)) = thisEccentricity(i);
         %       rfHalfWidth.data{scanNum}(x(i),y(i),z(i)) = thisRfHalfWidth(i);
-        ff = cell2struct(overlaySpec, 'usefulInfo', length(overlaySpec));
-        for iOverlay = 1:length(ff)                     
-            ff(iOverlay).data{scanNum}(x(i),y(i),z(i)) = thisData(iOverlay,i);
+%         ff = cell2struct(overlaySpec, 'usefulInfo', length(overlaySpec));
+        for iOverlay = 1:length(overlayNames)                     
+            theOverlays(iOverlay).data{scanNum}(x(i),y(i),z(i)) = thisData(iOverlay,i);
         end
     end
   end
@@ -338,14 +345,13 @@ for scanNum = params.scanNum
 
   iScan = find(params.scanNum == scanNum);
   thisParams.scanNum = params.scanNum(iScan);
-  for iOverlay = 1:length(ff)
-      ff(iOverlay).params{scanNum} = thisParams;
+  for iOverlay = 1:length(overlayNames)
+      theOverlays(iOverlay).params{scanNum} = thisParams;
   end  
 %   r2.params{scanNum} = thisParams;
 %   polarAngle.params{scanNum} = thisParams;
 %   eccentricity.params{scanNum} = thisParams;
 %   rfHalfWidth.params{scanNum} = thisParams; 
-
 
   % display how long it took
   disp(sprintf('(pRF) Fitting for %s:%i took in total: %s',params.groupName,scanNum,mlrDispElapsedTime(toc)));
@@ -360,12 +366,13 @@ pRFAnal.reconcileFunction = 'defaultReconcileParams';
 pRFAnal.mergeFunction = 'pRFMergeParams';
 pRFAnal.guiFunction = 'pRFGUI';
 pRFAnal.params = params;
-
-% for iOverlay = 1:numel(theOverlays)
-%     ff(iOverlay) = theOverlays{iOverlay}.name;
-% end
+pRFAnal.overlays = [];
+for iOverlay = 1:numel(theOverlays)
+    eval(sprintf('%s = struct(theOverlays{iOverlay})',overlayNames{iOverlay}));    
+    eval(sprintf('pRFAnal.overlays = [pRFAnal.overlays %s]',overlayNames{iOverlay}));
+end
 %pRFAnal.overlays = [r2 polarAngle eccentricity rfHalfWidth];
-pRFAnal.overlays = ff;
+% pRFAnal.overlays = ff;
 
 
 pRFAnal.curOverlay = 1;
