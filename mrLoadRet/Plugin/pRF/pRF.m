@@ -165,7 +165,7 @@ for scanNum = params.scanNum
   scanDims = viewGet(v,'scanDims',scanNum);
   
   % init overlays  
-  for iOverlay = 1:numel(overlaySpec)
+  for iOverlay = 1:numel(overlayNames)
 %       theOverlays{iOverlay}.overlayNames{iOverlay}.data{scanNum} = nan(scanDims);
       theOverlays{iOverlay}.data{scanNum} = nan(scanDims);
   end
@@ -288,7 +288,9 @@ for scanNum = params.scanNum
 
 %         stuff = fieldnames(fit);
         for iOverlay = 1:numel(overlayNames)
-            thisData(iOverlay,i) = fit.overlayNames{iOverlay};
+%             thisData(iOverlay,i) = fit.overlayNames{iOverlay};
+            
+    eval(sprintf('thisData(%d,%d) = fit.%s',iOverlay,i,overlayNames{iOverlay}));    
 
             %%thisData{1,iOverlay}{1,2}(i) = nan(1,n);
 
@@ -331,7 +333,7 @@ for scanNum = params.scanNum
         %       rfHalfWidth.data{scanNum}(x(i),y(i),z(i)) = thisRfHalfWidth(i);
 %         ff = cell2struct(overlaySpec, 'usefulInfo', length(overlaySpec));
         for iOverlay = 1:length(overlayNames)                     
-            theOverlays(iOverlay).data{scanNum}(x(i),y(i),z(i)) = thisData(iOverlay,i);
+            theOverlays{iOverlay}.data{scanNum}(x(i),y(i),z(i)) = thisData(iOverlay,i);
         end
     end
   end
@@ -346,7 +348,7 @@ for scanNum = params.scanNum
   iScan = find(params.scanNum == scanNum);
   thisParams.scanNum = params.scanNum(iScan);
   for iOverlay = 1:length(overlayNames)
-      theOverlays(iOverlay).params{scanNum} = thisParams;
+      theOverlays{iOverlay}.params{scanNum} = thisParams;
   end  
 %   r2.params{scanNum} = thisParams;
 %   polarAngle.params{scanNum} = thisParams;

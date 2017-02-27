@@ -24,7 +24,7 @@ switch mod
             case'theOverlays'                
                 data = cell(1,numel(overlaySpec));             
                 for iOverlay = 1:numel(overlaySpec)
-                    data{iOverlay} = initializeOverlay(v,params, overlaySpec{iOverlay});
+                    data{iOverlay} = initializeOverlay(v,params, overlaySpec{iOverlay}{:});
                 end
         end      
     
