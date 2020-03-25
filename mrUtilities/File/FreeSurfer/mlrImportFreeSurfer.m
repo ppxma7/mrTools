@@ -49,6 +49,7 @@ hemi      = {'lh', 'rh'};
 hemiNames = {'left', 'right'};
 outDir    = fullfile(pwd,'surfRelax');
 if ~exist('volumeCropSize')
+  %volumeCropSize = [256 256 256];
   volumeCropSize = [176 256 256];
 end
 defaultPixelSize = [1 1 1];
